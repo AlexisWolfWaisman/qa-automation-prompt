@@ -33,12 +33,12 @@ class NameCheckerAPI:
         response = requests.post(self.get_url(), headers=self.get_headers(), json=self.get_payload())
         return response.status_code, response.json()
     
-    def debug(self):
+    def diagnose_system_errors(self):
         fake = Faker() 
         rand = random.Random()
         abc = "abcdefghijklmnopqrstuvwxyz"
-        badFormattednames = ("123","!%&","Jhon","Jhon123","jHoN","","Jhon Martin",
-            "jhon martin", "jhon.martin@mymail.com", "perepia","https://es.wikipedia.org/wiki")
+        testNames = ("123","1.5", "True", "!%&", "!%jhon###&//martin" , "Jhon", "JHON", "Jhon123","jHoN","","Jh0n", "7jhon", "jh0n" ,  "Jhon Martin",
+            "jhon martin", "jhon.martin@mymail.com", "perepia","https://es.wikipedia.org/wiki", "+2064223358")
         def search_pattern(name):
             for myVar in range(3):
                 status_code, response = self.check_name(name)
@@ -59,9 +59,10 @@ class NameCheckerAPI:
             name = letter + group[rand.randint(0,24)]
             name = name + name[::-1]            
             search_pattern(name)
-        for name in badFormattednames:
+        for name in testNames:
             search_pattern(name)
         for i in range(10):
                     name = fake.first_name()                
-                    search_pattern(name)                    
+                    search_pattern(name) 
+                       
 
