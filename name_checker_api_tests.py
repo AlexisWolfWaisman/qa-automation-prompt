@@ -1,4 +1,6 @@
 import requests
+from faker import Faker
+import random
 
 class NameCheckerAPI:
     def __init__(self):
@@ -30,3 +32,36 @@ class NameCheckerAPI:
         self.set_payload({"name": p_name})
         response = requests.post(self.get_url(), headers=self.get_headers(), json=self.get_payload())
         return response.status_code, response.json()
+    
+    def debug(self):
+        fake = Faker() 
+        rand = random.Random()
+        abc = "abcdefghijklmnopqrstuvwxyz"
+        badFormattednames = ("123","!%&","Jhon","Jhon123","jHoN","","Jhon Martin",
+            "jhon martin", "jhon.martin@mymail.com", "perepia","https://es.wikipedia.org/wiki")
+        def search_pattern(name):
+            for myVar in range(3):
+                status_code, response = self.check_name(name)
+                if status_code == 200 :
+                        print(f"Name: {name} is a valid name")
+                        break
+                resp = response["message"]                             
+                if resp == "System is down":                    
+                    print(f"{name} - shuts down the system ")
+                else:
+                    print(f" {name} matched with pattern")
+                    print(f"Response: {response} - Status code: {status_code}") 
+        for letter in abc:
+            name = letter  
+            search_pattern(name)        
+        for letter in abc:
+            group = abc.replace(letter,"")
+            name = letter + group[rand.randint(0,24)]
+            name = name + name[::-1]            
+            search_pattern(name)
+        for name in badFormattednames:
+            search_pattern(name)
+        for i in range(10):
+                    name = fake.first_name()                
+                    search_pattern(name)                    
+
