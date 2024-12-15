@@ -1,6 +1,8 @@
 import requests
 from faker import Faker
 import random
+import Database_handler
+import time
 
 class NameCheckerAPI:
     def __init__(self):
@@ -64,5 +66,22 @@ class NameCheckerAPI:
         for i in range(10):
                     name = fake.first_name()                
                     search_pattern(name) 
-                       
+
+    def populate_database(self,maxTime=5):
+        fake = Faker()
+        names = [fake.first_name() for _ in range(1000)]
+        i = 0
+        db_conn = Database_handler.Db_connection()
+        start_time = time.time()
+        while time.time() - start_time < maxTime: 
+            name = names[i]            
+            status_code, response = self.check_name(name)
+            record = (self.get_url(), name, status_code, list(response.keys())[0])
+            db_conn.insert_record(self.get_url(), name, status_code, list(response.keys())[0])
+            i += 1
+        db_conn.close()
+
+
+
+
 
