@@ -13,12 +13,12 @@ def uptime_checker(p_totalTime):
     records = [(record[0],record[1].split()[-1]) for record in records]    
     records = [(record[0],datetime.strptime(record[1], "%H:%M:%S")) for record in records]
     intervals = [ (records[i][1] - records[i-1][1]).seconds for i in range(1,len(records)) if records[i-1][0] == 200]
-    counting_by_time = sum(intervals)
+    counting_by_time = sum(intervals)/p_totalTime * 100
     return counting_by_records,counting_by_time
     
 
 def test_uptimePerfo():
-    totalTime = 600
+    totalTime = 60
     db_conn = Db_connection()
     name_checker = NameCheckerAPI()
     db_conn.reset_table()
@@ -28,6 +28,9 @@ def test_uptimePerfo():
     print(f"System active time: {uptimeBySeconds} seconds out of {totalTime} seconds")    
 
 if __name__ == "__main__":
+    #first of all we will check the uptime performance
     test_uptimePerfo()
+    # After that we will try to find the pattern
+    NameCheckerAPI().diagnose_system_errors()
     
     

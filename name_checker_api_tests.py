@@ -3,7 +3,7 @@ from faker import Faker
 import random
 import Database_handler
 import time
-
+import string
 class NameCheckerAPI:
     def __init__(self):
         self.__url: str = ""
@@ -36,36 +36,52 @@ class NameCheckerAPI:
         return response.status_code, response.json()
     
     def diagnose_system_errors(self):
-        fake = Faker() 
-        rand = random.Random()
-        abc = "abcdefghijklmnopqrstuvwxyz"
-        testNames = ("123","1.5", "True", "!%&", "!%jhon###&//martin" , "Jhon", "JHON", "Jhon123","jHoN","","Jh0n", "7jhon", "jh0n" ,  "Jhon Martin",
-            "jhon martin", "jhon.martin@mymail.com", "perepia","https://es.wikipedia.org/wiki", "+2064223358")
         def search_pattern(name):
-            for myVar in range(3):
+            for myVar in range(2):
                 status_code, response = self.check_name(name)
                 if status_code == 200 :
                         print(f"Name: {name} is a valid name")
                         break
                 resp = response["message"]                             
-                if resp == "System is down":                    
-                    print(f"{name} - shuts down the system ")
-                else:
-                    print(f" {name} matched with pattern")
-                    print(f"Response: {response} - Status code: {status_code}") 
-        for letter in abc:
-            name = letter  
-            search_pattern(name)        
-        for letter in abc:
-            group = abc.replace(letter,"")
-            name = letter + group[rand.randint(0,24)]
-            name = name + name[::-1]            
-            search_pattern(name)
-        for name in testNames:
-            search_pattern(name)
-        for i in range(10):
-                    name = fake.first_name()                
-                    search_pattern(name) 
+                if status_code == 500 and resp != "System is down":
+                    print(f" {name} - Response: {response}")
+                    return True        
+        def generate_random_name():
+        
+            chars = string.ascii_letters + string.digits + "!@#$%^&*()_+-=[]{}|;:'\"<>,.?/" + "áéíóú😊🚀测试"
+            length = random.choice(range(1, 256))  # Longitud aleatoria entre 1 y 255
+            return ''.join(random.choices(chars, k=length))
+        #trying with names from different countries        
+        faker_country_codes = [
+    "ar_AE", "ar_PS", "ar_SA", "bg_BG", "cs_CZ", "de_AT", "de_CH", "de_DE",
+    "dk_DK", "el_GR", "en_AU", "en_CA", "en_GB", "en_IE", "en_IN", "en_NZ",
+    "en_PH", "en_US", "es_AR", "es_CL", "es_CO", "es_ES", "es_MX","et_EE", 
+    "fa_IR", "fi_FI", "fr_BE", "fr_CA", "fr_CH", "fr_FR", "he_IL",
+    "hi_IN", "hr_HR", "hu_HU", "hy_AM", "id_ID", "it_IT", "ja_JP", "ka_GE",
+    "ko_KR", "lt_LT", "lv_LV", "ne_NP", "nl_BE", "nl_NL", "no_NO", "pl_PL",
+    "pt_BR", "pt_PT", "ro_RO", "ru_RU", "sk_SK", "sl_SI", "sq_AL", 
+    "sv_SE"]
+        for country_code in faker_country_codes:
+            fake = Faker(country_code)
+            names = [fake.first_name() for _ in range(2)]
+            for name in names:
+                flag = search_pattern(name)
+                if flag:
+                    break       
+        # trying with some known patterns
+        possibleNames = ["", "@#$$%", "1234", "Jhon","jHoN","Jhon123","Jhon Simpson", " ","18.28","jhon.simpson@xmail.com", "www.jhonsimpson.com" ]
+        for name in possibleNames:
+            flag = search_pattern(name)
+            if flag:
+                break
+   
+        
+      #if everything above fails, we will try with random names
+        while True: 
+            name = generate_random_name()   
+            flag = search_pattern(name)
+            if flag:
+                break                  
 
     def populate_database(self,maxTime=5):
         fake = Faker()
@@ -80,8 +96,5 @@ class NameCheckerAPI:
             db_conn.insert_record(self.get_url(), name, status_code, list(response.keys())[0])
             i += 1
         db_conn.close()
-
-
-
 
 
